@@ -17,16 +17,23 @@ struct{
 } typedef st_nodo;
 
 st_nodo *nodoVacio();
-st_nodo *crearNodo(int cargarID, int cargarDuracion, char cargarDescripcion[MAX]);
-void insertarNodo(st_nodo **start, int cargarID, int cargarDuracion, char cargarDescripcion[MAX]);
+st_nodo *crearNodo(st_nodo *nodo, int cargarID, int cargarDuracion, char *cargarDescripcion);
+void insertarNodo(st_nodo **start, int cargarID, int cargarDuracion, char *cargarDescripcion);
+void mostrarNodos(st_nodo *start);
+st_nodo *buscarNodo(st_nodo *start, char *descripcion);
+void eliminarNodo(st_nodo *nodo);
+st_nodo *quitarNodo(st_nodo **start, char *oracion);
+
+
 
 int main()
 {
+    srand(time(NULL));
     int cargarId , cargarDuracion, anterior = 0, cargar = 1;
-    char cargarDescripcion[MAX];
-    st_nodo *realizadas;
+    char cargarDescripcion[MAX], *buscar;
 
-    st_nodo *start = nodoVacio();
+    st_nodo *start = nodoVacio();           //lista enlazada para las tareas pendientes
+    st_nodo *startRealizadas = nodoVacio(); //lista enlazada para las tareas pendientes
 
     while(cargar == 1)
     {
@@ -62,6 +69,49 @@ int main()
         while(getchar() != '\n');
     }
 
+    mostrarNodos(start);
+
+    printf("\nDesea marcar una tarea como realizada?");
+    printf("\n1)SI");
+    printf("\n2)NO\n");
+    scanf("%d", &cargar);
+    while(getchar() != '\n');//LIMPIAR EL BUFFER
+
+    while(cargar == 1)
+    {
+        printf("\nIngrese la trea: ");
+        gets(cargarDescripcion);
+        buscar = (char*)malloc(sizeof(char) * (strlen(cargarDescripcion) + 1)  );
+        strcpy(buscar, cargarDescripcion);
+        st_nodo *auxiliar = buscarNodo(start, buscar); //Guardo el nodo aqui
+
+        if(auxiliar)
+        {
+            cargarId = auxiliar->T.tareaID; //Guardo los datos del nodo
+            cargarDuracion = auxiliar->T.duracion;
+            insertarNodo(&startRealizadas, cargarId, cargarDuracion, buscar); 
+            //Inserto en un nodo de la otra lista los valores del nodo encontrado
+            
+            st_nodo *borrar = quitarNodo(&start, buscar);
+            eliminarNodo(borrar);
+        }
+
+        printf("\nDesea marcar una tarea como realizada?");
+        printf("\n1)SI");
+        printf("\n2)NO\n");
+        scanf("%d", &cargar);
+        while(getchar() != '\n');//LIMPIAR EL BUFFER
+
+    }
+
+    printf("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    printf("\nTareas Pendientes: ");
+    mostrarNodos(start);
+    printf("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    printf("\nTareas realizadas: ");
+    mostrarNodos(startRealizadas);
+
+
     return 0;
 }
 
@@ -70,28 +120,87 @@ st_nodo *nodoVacio()
     return NULL;
 }
 
-st_nodo *crearNodo(int cargarID, int cargarDuracion, char cargarDescripcion[MAX])
+st_nodo *crearNodo(st_nodo *nodo, int cargarID, int cargarDuracion, char *cargarDescripcion)
 {
     int longitudDescripcion = strlen(cargarDescripcion) + 1;
 
-    st_nodo *pendientes = (st_nodo *)malloc(sizeof(st_nodo)); //Reservo memoria dinamica para el nodo
-    pendientes->T.duracion = cargarDuracion;
-    pendientes->T.tareaID = cargarID;
+    nodo = (st_nodo *)malloc(sizeof(st_nodo)); //Reservo memoria dinamica para el nodo
+    nodo->T.duracion = cargarDuracion;
+    nodo->T.tareaID = cargarID;
 
-    pendientes->T.descripcion = (char *)malloc(sizeof(char) * longitudDescripcion);
-    strcpy(pendientes->T.descripcion, cargarDescripcion); //cargo los campos de informacion
-    pendientes->siguiente = NULL; //Indico que se ha llegado al final de la lista
+    nodo->T.descripcion = (char *)malloc(sizeof(char) * longitudDescripcion);
+    strcpy(nodo->T.descripcion, cargarDescripcion); //cargo los campos de informacion
+    nodo->siguiente = NULL; //Indico que se ubicara al de la lista
 
-    return pendientes;
+    return nodo;
 }
 
-void insertarNodo(st_nodo **start, int cargarID, int cargarDuracion, char cargarDescripcion[MAX])
+void insertarNodo(st_nodo **start, int cargarID, int cargarDuracion, char *cargarDescripcion)
 {
-    st_nodo *pendientes = crearNodo(cargarID, cargarDuracion, cargarDescripcion);//Creo el nodo
+    st_nodo *nodo = crearNodo(nodo, cargarID, cargarDuracion, cargarDescripcion);//Creo el nodo
 
-    pendientes->siguiente = *start;  //Hago que el nodo apunte al nodo que se encuentra
+    nodo->siguiente = *start;  //Hago que el nodo apunte al nodo que se encuentra
                                 // al comienzo de la lista enlazada
 
-    *start = pendientes; // elpuntero principal de la lista apunta ahora al nuevo nodo
+    *start = nodo; // elpuntero principal de la lista apunta ahora al nuevo nodo
                     // el nodo recien creado se convierte en el inicio de la lista
+}
+
+void mostrarNodos(st_nodo *start)
+{
+    st_nodo *auxiliar = start;
+    while(auxiliar) //Mientras nuestro nodo no sea NULL, es decir, el ultimo de la lista
+    {
+        printf("\n~~~~~~~~~~~");
+        printf("\nID de la tarea: %d", auxiliar->T.tareaID);
+        printf("\nTarea: ");
+        puts(auxiliar->T.descripcion);
+        printf("Duracion de la tarea: %d", auxiliar->T.duracion);
+
+        auxiliar = auxiliar->siguiente;
+    }
+}
+
+st_nodo *buscarNodo(st_nodo *start, char *descripcion)
+{
+    st_nodo *auxiliar = start;
+    while(auxiliar && strcmp(auxiliar->T.descripcion,descripcion) != 0)
+    //Mientras no se llegue al final de la lista
+    //y la descripcion del nodo no sea la que busco
+    {
+        auxiliar = auxiliar->siguiente; //Avanzo en la lista
+    }
+    
+    return auxiliar;
+}
+
+void eliminarNodo(st_nodo *nodo)
+{
+    if(nodo)
+    {
+        free(nodo->T.descripcion);
+        free(nodo);
+    }
+}
+
+st_nodo *quitarNodo(st_nodo **start, char *oracion)
+{
+    st_nodo **auxiliar = start;
+    while(*auxiliar != NULL && strcmp((*auxiliar)->T.descripcion,oracion) != 0 )
+    //Mientras no se llegue al final de la lista
+    //Mientras no se encuentre el nodo
+    {
+        auxiliar = &(*auxiliar)->siguiente; //Se pasa al siguiente
+    }
+
+    if(*auxiliar) //Si se encontro el nodo (es distinto de NULL)
+    {
+        st_nodo *temporal = *auxiliar;
+        *auxiliar = (*auxiliar)->siguiente;
+        temporal->siguiente = NULL;
+        return temporal;
+    }
+
+    return NULL;
+
 }
