@@ -23,7 +23,8 @@ void mostrarNodos(st_nodo *start);
 st_nodo *buscarNodo(st_nodo *start, char *descripcion);
 void eliminarNodo(st_nodo *nodo);
 st_nodo *quitarNodo(st_nodo **start, char *oracion);
-
+void consultarConId(st_nodo *start, st_nodo *start2);
+void consultarConNombre(st_nodo *start, st_nodo *start2);
 
 
 int main()
@@ -111,6 +112,19 @@ int main()
     printf("\nTareas realizadas: ");
     mostrarNodos(startRealizadas);
 
+    printf("\n~~~~~~~~~~~~~~~~~~~~~~~");
+    printf("\nCon que metodo desea buscar la tarea");
+    printf("\n1) ID");
+    printf("\n2) Descripcion");
+    scanf("%d", &cargar);
+    while(getchar() != '\n');
+
+    if(cargar == 1)
+    {
+        consultarConId(start, startRealizadas);
+    } else {
+        consultarConNombre(start, startRealizadas);
+    }
 
     return 0;
 }
@@ -202,5 +216,105 @@ st_nodo *quitarNodo(st_nodo **start, char *oracion)
     }
 
     return NULL;
+
+}
+
+void consultarConId(st_nodo *start, st_nodo *start2)
+{
+    int id;
+
+    printf("\nIngrese la id: ");
+    scanf("%d", &id);
+
+
+        st_nodo *aux = start;
+
+        while(aux && aux->T.tareaID != id)
+        {
+            aux = aux->siguiente;
+        }
+
+        if(aux) //Si se encontro la tarea en pendientes
+        {
+            printf("\nLa tarea esta en estado pendinte");
+            printf("\nID: %d", aux->T.tareaID);
+            printf("\nNombre: ");
+            puts(aux->T.descripcion);
+            printf("\nDuracion: %d", aux->T.duracion);
+        } else { //si no se encontro en pendientes, busco en realizado
+
+            aux = start2;
+
+            while(aux && aux->T.tareaID != id)
+            {
+                aux = aux->siguiente;
+            }
+
+            if(aux)//Si se encontro en tareas realizadas
+            {
+                printf("\nLa tarea esta en estado realizada");
+                printf("\nID: %d", aux->T.tareaID);
+                printf("\nNombre: ");
+                puts(aux->T.descripcion);
+                printf("\nDuracion: %d", aux->T.duracion);
+            }
+        }
+    
+
+    if(aux == NULL)
+    {
+        printf("\n No se a encontrado la tarea");
+    }
+}
+
+
+void consultarConNombre(st_nodo *start, st_nodo *start2)
+{
+    char descripcion[MAX], *buscar;
+
+    printf("\nIngrese la descripcion de la tarea: ");
+    gets(descripcion);
+    buscar = (char *)malloc(sizeof(char) * (strlen(descripcion) +1)  );
+    strcpy(buscar, descripcion);
+
+
+    st_nodo *aux = start;
+
+    while(aux && strcmp(buscar,aux->T.descripcion) != 0)
+    {
+        aux = aux->siguiente;
+    }
+
+    if(aux) //Si se encontro la tarea en pendientes
+    {
+        printf("\nLa tarea esta en estado pendinte");
+        printf("\nID: %d", aux->T.tareaID);
+        printf("\nNombre: ");
+        puts(aux->T.descripcion);
+        printf("\nDuracion: %d", aux->T.duracion);
+    } else { //si no se encontro en pendientes, busco en realizado
+
+        aux = start2;
+
+        while(aux && strcmp(buscar,aux->T.descripcion) != 0)
+        {
+            aux = aux->siguiente;
+        }
+
+        if(aux)//Si se encontro en tareas realizadas
+        {
+            printf("\nLa tarea esta en estado realizada");
+            printf("\nID: %d", aux->T.tareaID);
+            printf("\nNombre: ");
+            puts(aux->T.descripcion);
+            printf("\nDuracion: %d", aux->T.duracion);
+        }
+    }
+
+
+if(aux == NULL)
+{
+    printf("\n No se a encontrado la tarea");
+}
 
 }
